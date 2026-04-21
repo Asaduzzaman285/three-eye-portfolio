@@ -1,0 +1,28 @@
+.service-card {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+  }
+  
+  .service-card:hover {
+    background-color: #eff6ff; /* Tailwind's blue-50 */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .read-more-btn {
+    display: inline-block;
+    margin-top: 12px;
+    color: #2563eb; /* Tailwind blue-600 */
+    font-size: 0.875rem;
+    text-decoration: none;
+    transform: translateY(12px);
+    opacity: 0;
+    transition: all 0.4s ease;
+    cursor: pointer;
+  }
+  
+  .service-card:hover .read-more-btn {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  

@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  frontend:
+    image: wintel-frontend-image
+    container_name: wintel_react_frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "803:80"
+    restart: unless-stopped
+    stdin_open: true
+    tty: true

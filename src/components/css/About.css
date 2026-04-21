@@ -1,0 +1,6 @@
+@media (max-width: 1120px) {
+ .redline {
+       display: none !important; /* Hide the red line on smaller screens */
+  }
+  
+}

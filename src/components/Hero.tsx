@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import axios from 'axios';
 
 interface CarouselItem {
   id: number;
@@ -10,44 +11,82 @@ const Hero: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(true);
 
-  // Fallback images simulating the factory background
+  const API_BASE = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+
   useEffect(() => {
-    setCarouselItems([
-      {
-        id: 1,
-        image: "/assets/img/slider1.jpeg"
-      },
-      {
-        id: 2,
-        image: "/assets/img/slider2.jpeg"
-      },
-      {
-        id: 3,
-        image: "/assets/img/slider3.jpeg"
+    const fetchHeroes = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/v1/public/portfolio/heroes`);
+        let items = [];
+        if (res.data?.success && res.data.data.length > 0) {
+          items = res.data.data.map((hero: any) => ({
+            id: hero.id,
+            image: hero.image_path ? `${API_BASE}${hero.image_path}` : "/assets/img/slider1.jpeg"
+          }));
+        } else {
+          items = [
+            { id: 1, image: "/assets/img/slider1.jpeg" },
+            { id: 2, image: "/assets/img/slider2.jpeg" },
+            { id: 3, image: "/assets/img/slider3.jpeg" }
+          ];
+        }
+        
+        // Add a clone of the first item at the end for circular effect
+        setCarouselItems([...items, { ...items[0], id: -1 }]);
+      } catch (error) {
+        console.error("Failed to load hero slides:", error);
+        const fallbacks = [
+            { id: 1, image: "/assets/img/slider1.jpeg" },
+            { id: 2, image: "/assets/img/slider2.jpeg" },
+            { id: 3, image: "/assets/img/slider3.jpeg" }
+        ];
+        setCarouselItems([...fallbacks, { ...fallbacks[0], id: -1 }]);
+      } finally {
+        setLoading(false);
       }
-    ]);
-    setLoading(false);
+    };
+
+    fetchHeroes();
   }, []);
 
   useEffect(() => {
-    if (carouselItems.length > 0) {
+    if (carouselItems.length > 1) {
       const interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-      }, 8000);
+        goToNext();
+      }, 6000);
       return () => clearInterval(interval);
     }
-  }, [carouselItems]);
+  }, [carouselItems, currentSlide]);
 
-  const goToPrevious = () => {
-    if (carouselItems.length > 0) {
-      setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+  const goToNext = () => {
+    if (carouselItems.length === 0) return;
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => prev + 1);
+  };
+
+  const handleTransitionEnd = () => {
+    // If we reached the clone (last item), jump back to the real first item instantly
+    if (currentSlide >= carouselItems.length - 1) {
+      setIsTransitioning(false);
+      setCurrentSlide(0);
     }
   };
 
-  const goToNext = () => {
-    if (carouselItems.length > 0) {
-      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+  const goToPrevious = () => {
+    if (carouselItems.length === 0) return;
+    if (currentSlide === 0) {
+        // Jump to clone instantly, then animate to real last
+        setIsTransitioning(false);
+        setCurrentSlide(carouselItems.length - 1);
+        setTimeout(() => {
+            setIsTransitioning(true);
+            setCurrentSlide(carouselItems.length - 2);
+        }, 50);
+    } else {
+        setIsTransitioning(true);
+        setCurrentSlide((prev) => prev - 1);
     }
   };
 
@@ -64,10 +103,12 @@ const Hero: React.FC = () => {
       {/* Background Slider */}
       <div className="absolute inset-0 z-0">
         <div
-          className="absolute top-0 left-0 flex transition-transform duration-1000 ease-in-out w-full h-full"
+          className="absolute top-0 left-0 flex w-full h-full"
           style={{
             transform: `translateX(-${currentSlide * 100}%)`,
+            transition: isTransitioning ? 'transform 1000ms ease-in-out' : 'none'
           }}
+          onTransitionEnd={handleTransitionEnd}
         >
           {carouselItems.map((item) => (
             <div key={item.id} className="relative w-full h-full flex-shrink-0">

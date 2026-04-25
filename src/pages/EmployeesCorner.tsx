@@ -9,8 +9,8 @@ const EmployeesCorner = () => {
   const [error, setError] = useState(false);
   const [inquiries, setInquiries] = useState<any[]>([]);
 
-  // The secret PIN for the demo
-  const SECRET_PIN = "1234";
+  // The secret PIN for the dashboard
+  const SECRET_PIN = "Employee2026!";
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -29,6 +29,7 @@ const EmployeesCorner = () => {
     if (pin === SECRET_PIN) {
       setIsAuthenticated(true);
       setError(false);
+      localStorage.setItem('is_employee_authenticated', 'true');
     } else {
       setError(true);
       setPin('');
@@ -74,7 +75,7 @@ const EmployeesCorner = () => {
                     type="password"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
-                    placeholder="Enter PIN (Demo: 1234)"
+                    placeholder="Enter Employee Password"
                     className={`w-full px-4 py-4 rounded-xl border ${error ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'} focus:ring-2 focus:ring-[#1d3278] outline-none text-center text-xl tracking-[0.5em] font-mono`}
                     autoFocus
                   />
@@ -111,7 +112,10 @@ const EmployeesCorner = () => {
                   {inquiries.length} {inquiries.length === 1 ? 'Message' : 'Messages'}
                 </div>
                 <button
-                  onClick={() => setIsAuthenticated(false)}
+                  onClick={() => {
+                    setIsAuthenticated(false);
+                    localStorage.removeItem('is_employee_authenticated');
+                  }}
                   className="text-gray-500 hover:text-gray-800 font-medium text-sm transition"
                 >
                   Logout
@@ -181,9 +185,9 @@ const EmployeesCorner = () => {
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Draft Email via Gmail Web */}
                         <a
-                          href={`https://mail.google.com/mail/?view=cm&fs=1&to=${inquiry.email}&cc=management@threeeyebd.com&su=${encodeURIComponent(`${inquiry.productEnquiry || 'Product Inquiry'} - ${inquiry.name} - ${inquiry.phone}`)}`}
+                          href={`https://mail.google.com/mail/?view=cm&fs=1&to=${inquiry.categoryEmail || 'management@threeeyebd.com'}&cc=kazi.gulshan@threeeyebd.com&su=${encodeURIComponent(`${inquiry.productEnquiry || 'Product Inquiry'} - ${inquiry.name} - ${inquiry.phone}`)}`}
                           target="_blank"
-                          onClick={(e) => e.preventDefault()}
+                          // onClick={(e) => e.preventDefault()}
                           rel="noopener noreferrer"
                           className="flex items-center text-sm font-bold px-4 py-2 rounded-lg transition-colors shadow-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
                         >

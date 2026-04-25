@@ -1,56 +1,86 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-
-const slides = [
-  {
-    title: "Introduction",
-    content: (
-      <p>
-        Three Eye is committed to delivering excellence in global sourcing and supply. Our core strength lies in importing high-quality materials and ensuring they reach our clients with efficiency and reliability.
-      </p>
-    )
-  },
-  {
-    title: "Who We Are",
-    content: (
-      <p>
-        We are a professional trading and supply company focused on building long-term partnerships through trust, transparency, and consistent performance.
-      </p>
-    )
-  },
-  {
-    title: "Our Approach",
-    content: (
-      <p>
-        We combine international sourcing expertise with local market understanding to deliver value-driven solutions tailored to evolving industrial needs.
-      </p>
-    )
-  },
-  {
-    title: "Vision & Mission",
-    content: (
-      <ul className="space-y-2 list-none">
-        <li>
-          <strong className="text-blue-900">Vision:</strong> To become a leading regional supplier and solution provider across South Asia and the Middle East, recognized for excellence, innovation, and trust, while driving sustainable industrial development and long-term partnerships.
-        </li>
-        <li>
-          <strong className="text-blue-900">Mission:</strong> To deliver high-quality minerals, raw materials & food grains through reliable global sourcing, efficient logistics, and a strong customer-centric approach—ensuring value, consistency, and sustainable growth for our clients and partners.
-        </li>
-      </ul>
-    )
-  }
-];
+import axios from 'axios';
 
 const AboutUs: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [aboutData, setAboutData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+
+  const API_BASE = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000';
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchAboutData();
   }, []);
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  const fetchAboutData = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/v1/public/portfolio/about`);
+      if (res.data?.success && res.data.data) {
+        setAboutData(res.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to load about us data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const baseSlides = aboutData?.slides && aboutData.slides.length > 0 
+    ? [...aboutData.slides].sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+    : [
+        {
+          title: "Introduction",
+          content: "Three Eye is committed to delivering excellence in global sourcing and supply. Our core strength lies in importing high-quality materials and ensuring they reach our clients with efficiency and reliability."
+        },
+        {
+          title: "Who We Are",
+          content: "We are a professional trading and supply company focused on building long-term partnerships through trust, transparency, and consistent performance."
+        },
+        {
+          title: "Our Approach",
+          content: "We combine international sourcing expertise with local market understanding to deliver value-driven solutions tailored to evolving industrial needs."
+        },
+        {
+          title: "Vision & Mission",
+          content: "Vision: To become a leading regional supplier and solution provider across South Asia and the Middle East... Mission: To deliver high-quality minerals, raw materials & food grains..."
+        }
+      ];
+
+  // Clone first slide at the end for circular effect
+  const dynamicSlides = [...baseSlides, { ...baseSlides[0], id: -1 }];
+
+  const nextSlide = () => {
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => prev + 1);
+  };
+
+  const handleTransitionEnd = () => {
+    if (currentSlide >= dynamicSlides.length - 1) {
+      setIsTransitioning(false);
+      setCurrentSlide(0);
+    }
+  };
+
+  const prevSlide = () => {
+    if (currentSlide === 0) {
+      setIsTransitioning(false);
+      setCurrentSlide(dynamicSlides.length - 1);
+      setTimeout(() => {
+        setIsTransitioning(true);
+        setCurrentSlide(dynamicSlides.length - 2);
+      }, 50);
+    } else {
+      setIsTransitioning(true);
+      setCurrentSlide((prev) => prev - 1);
+    }
+  };
+
+  const pageTitle = aboutData?.right_title || "Connecting Global Resources with Industrial Excellence.";
+  const pageImage = aboutData?.left_image_path ? `${API_BASE}${aboutData.left_image_path}` : "/assets/img/about-fr.jpeg";
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -78,8 +108,8 @@ const AboutUs: React.FC = () => {
           {/* Left Image Section */}
           <div className="lg:col-span-4 flex justify-center lg:justify-end pt-2">
             <img
-              src="/assets/img/about-fr.jpeg"
-              alt="Industrial Plant"
+              src={pageImage}
+              alt="About Us"
               className="w-full max-w-sm md:max-w-md h-auto object-cover rounded shadow-lg"
             />
           </div>
@@ -87,7 +117,7 @@ const AboutUs: React.FC = () => {
           {/* Right Text Section */}
           <div className="lg:col-span-8 flex flex-col space-y-6 text-gray-800 text-sm md:text-base leading-relaxed overflow-hidden">
             <h2 className="text-xl md:text-2xl font-bold text-blue-900 border-b-2 border-blue-900 pb-2 inline-block self-start">
-              Connecting Global Resources with Industrial Excellence.
+              {pageTitle}
             </h2>
 
             {/* Slider Implementation */}
@@ -96,13 +126,17 @@ const AboutUs: React.FC = () => {
               {/* Slides Container */}
               <div className="overflow-hidden relative w-full flex-grow">
                 <div 
-                  className="flex transition-transform duration-500 ease-in-out h-full"
-                  style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                  className="flex h-full"
+                  style={{ 
+                    transform: `translateX(-${currentSlide * 100}%)`,
+                    transition: isTransitioning ? 'transform 500ms ease-in-out' : 'none'
+                  }}
+                  onTransitionEnd={handleTransitionEnd}
                 >
-                  {slides.map((slide, idx) => (
+                  {dynamicSlides.map((slide: any, idx: number) => (
                     <div key={idx} className="w-full h-full flex-shrink-0 px-2 lg:px-4">
                       <h3 className="text-lg md:text-xl font-bold text-blue-900 mb-4">{slide.title}</h3>
-                      <div className="text-gray-700 leading-relaxed text-justify">
+                      <div className="text-gray-700 leading-relaxed text-justify whitespace-pre-wrap">
                         {slide.content}
                       </div>
                     </div>
@@ -123,12 +157,15 @@ const AboutUs: React.FC = () => {
 
                 {/* Dots indicator */}
                 <div className="flex space-x-3">
-                  {slides.map((_, idx) => (
+                  {baseSlides.map((_: any, idx: number) => (
                     <button
                       key={idx}
-                      onClick={() => setCurrentSlide(idx)}
+                      onClick={() => {
+                        setIsTransitioning(true);
+                        setCurrentSlide(idx);
+                      }}
                       className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
-                        currentSlide === idx ? 'bg-blue-900 scale-125' : 'bg-gray-300 hover:bg-gray-400'
+                        (currentSlide % baseSlides.length) === idx ? 'bg-blue-900 scale-125' : 'bg-gray-300 hover:bg-gray-400'
                       }`}
                       aria-label={`Go to slide ${idx + 1}`}
                     />

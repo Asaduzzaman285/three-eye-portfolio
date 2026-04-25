@@ -7,6 +7,7 @@ import { useLocation } from 'react-router-dom';
 const ContactUs = () => {
   const location = useLocation();
   const productEnquiry = location.state?.product;
+  const categoryEmail = location.state?.categoryEmail;
 
   const [formData, setFormData] = useState({
     name: '',
@@ -43,6 +44,7 @@ const ContactUs = () => {
         id: Date.now(),
         date: new Date().toLocaleString(),
         productEnquiry: productEnquiry || 'General Inquiry',
+        categoryEmail: categoryEmail || '',
         ...formData
       });
       

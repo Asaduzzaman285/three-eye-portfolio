@@ -1,148 +1,168 @@
-// import React, { useState } from 'react';
-// import { ArrowRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react';
 
-// const Products: React.FC = () => {
-//   const [currentProduct, setCurrentProduct] = useState('mobile-masala');
+const Products: React.FC = () => {
+    const navigate = useNavigate();
+    const [collectiveProducts, setCollectiveProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-//   const products = [
-//     {
-//       id: 'mobile-masala',
-//       title: 'Mobile Masala',
-//       description:
-//         'Mobile Masala WAP Portal. On Mobile Masala you can find WAP portals where you can downloads wallpaper, games, music, video, etc. Also there is a robust App on the same name and using this app you can easily find your favorite songs by title and set as your ring back tone.',
-//       image: 'https://wintelbd.com/assets/img/products/mobile_masala.jpg',
-//       link: 'https://wintelbd.com/digital-service/mobile-masala'
-//     },
-//     {
-//       id: 'selfie-star',
-//       title: 'Selfie Star',
-//       description:
-//         'Selfie star is a unique upbeat mobile application that aims to bring a new approach to #Selfie trend popular on social networking sites such as Facebook, Instagram, Twitter and more.',
-//       image: 'https://wintelbd.com/assets/img/products/selfie_star.jpg',
-//       link: 'https://wintelbd.com/digital-service/selfie-star'
-//     },
-//     {
-//       id: 'yoga-club',
-//       title: 'Yoga Club',
-//       description:
-//         'Yoga Club is an online web portal which enables users to subscribe to exclusive yoga and meditation instructions from certified Yogis, from the comfort of their home.',
-//       image: 'https://wintelbd.com/assets/img/products/yoga_club.jpg',
-//       link: 'https://wintelbd.com/digital-service/yoga-club'
-//     }
-//   ];
+    const [emblaRef, emblaApi] = useEmblaCarousel({
+        align: 'start',
+        loop: false,
+        skipSnaps: false,
+        dragFree: true
+    });
 
-//   const current = products.find((p) => p.id === currentProduct);
+    const scrollPrev = () => emblaApi && emblaApi.scrollPrev();
+    const scrollNext = () => emblaApi && emblaApi.scrollNext();
 
-//   return (
-//     <section
-//       id="products"
-//       className="py-20 bg-white"
-//       style={{
-//         backgroundImage: `url('https://wintelbd.com/assets/img/company-bg.png')`,
-//         backgroundSize: 'cover',
-//         backgroundPosition: 'center'
-//       }}
-//     >
-//       <div className="container mx-auto px-4">
-//       <div className="mb-8 md:mb-12 font-poppins">
-//     <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#333333] mb-4 md:mb-6">
-//         Our Products
-//     </h2>
-//     <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-[#333333] leading-relaxed">
-//         <span className="text-[#2eb7f3] font-bold">We Are Leading</span>{' '}
-//         VAS Company With Various{' '}
-//         <span className="text-[#2eb7f3] font-bold">Kinds Of Products</span>
-//     </h2>
-// </div>
+    const API_BASE = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000';
 
+    useEffect(() => {
+        const fetchCollectiveProducts = async () => {
+            try {
+                const res = await axios.get(`${API_BASE}/api/v1/public/portfolio/product-categories`);
+                if (res.data?.success && res.data.data) {
+                    setCollectiveProducts(res.data.data);
+                }
+            } catch (error) {
+                console.error("Failed to load collective products for home:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCollectiveProducts();
+    }, []);
 
+    const handleCardClick = (id: number) => {
+        navigate(`/products#category-${id}`);
+    };
 
-//         {/* Tabs */}
-//         <div className="flex justify-center md:justify-start mb-4 border-b border-gray-300">
-//           {products.map((product) => (
-//             <button
-//               key={product.id}
-//               onClick={() => setCurrentProduct(product.id)}
-//               className={`text-sm font-semibold uppercase px-6 py-3 transition-all duration-300 focus:outline-none ${
-//                 currentProduct === product.id
-//                   ? 'text-white bg-blue-600'
-//                   : 'text-gray-800 hover:text-blue-600'
-//               }`}
-//               style={{
-//                 borderBottom:
-//                   currentProduct === product.id ? '3px solid #0d6efd' : '3px solid transparent'
-//               }}
-//             >
-//               {product.title.toUpperCase()}
-//             </button>
-//           ))}
-//         </div>
+    if (loading) return null;
+    if (collectiveProducts.length === 0) return null;
 
-//         {/* Content */}
-//         {current && (
-//           <div
-//             key={current.id}
-//             className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-fadeInUp"
-//             style={{ animation: 'fadeInUp 0.6s ease forwards' }}
-//           >
-//             {/* Text */}
-//             <div className="text-left">
-//               <h3 className="text-2xl font-bold mb-4" style={{ color: '#414141' }}>
-//                 {current.title}
-//               </h3>
-//               <p
-//                 style={{
-//                   fontSize: '15px',
-//                   color: '#777777',
-//                   marginBottom: '30px',
-//                   lineHeight: '1.7'
-//                 }}
-//               >
-//                 {current.description}
-//               </p>
-//               <a
-//                 href={current.link}
-//                 target="_blank"
-//                 rel="noopener noreferrer"
-//                 className="inline-flex items-center px-5 py-2 bg-blue-500 text-white  hover:bg-blue-600 transition text-sm"
-//                 style={{ minHeight: '36px' }}
-//               >
-//                 Read More <ArrowRight className="ml-2 w-4 h-4" />
-//               </a>
-//             </div>
+    return (
+        <section className="py-20 bg-white">
+            <div className="container mx-auto px-6 max-w-7xl">
+                
+                {/* Header */}
+                <div className="text-center mb-16">
+                    <h2 className="text-[#B92025] text-2xl md:text-3xl font-bold mb-3 uppercase tracking-wider">
+                        Our Products
+                    </h2>
+                    <div className="max-w-2xl mx-auto">
+                        <p className="text-lg font-semibold text-gray-800 mb-2">Quality Materials, Trusted Delivery.</p>
+                        <p className="text-sm md:text-base text-gray-600">Explore our comprehensive range of high-quality industrial materials and chemicals.</p>
+                    </div>
+                </div>
 
-//             {/* Image */}
-//             <div className="text-center">
-//               <img
-//                 src={current.image}
-//                 alt={current.title}
-//                 className="w-full max-w-md mx-auto"
-//               />
-//             </div>
-//           </div>
-//         )}
-//       </div>
+                {/* Carousel Container */}
+                <div className="relative group/carousel">
+                    <div className="overflow-hidden" ref={emblaRef}>
+                        <div className="flex -ml-6">
+                            {collectiveProducts.map((product) => (
+                                <div 
+                                    key={product.id}
+                                    className="flex-[0_0_100%] sm:flex-[0_0_50%] md:flex-[0_0_33.33%] lg:flex-[0_0_25%] xl:flex-[0_0_20%] min-w-0 pl-6"
+                                >
+                                    <div 
+                                        onClick={() => handleCardClick(product.id)}
+                                        className="relative group rounded-3xl shadow-2xl bg-[#1d3278] cursor-pointer overflow-hidden transition-all duration-700 hover:shadow-blue-900/30 aspect-square flex flex-col"
+                                    >
+                                        {/* Full Image Background */}
+                                        <div className="absolute inset-0 w-full h-full">
+                                            {product.image_path ? (
+                                                <img 
+                                                    src={`${API_BASE}${product.image_path}`} 
+                                                    alt={product.name} 
+                                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-blue-50 flex items-center justify-center">
+                                                    <Package className="w-12 h-12 text-blue-200" />
+                                                </div>
+                                            )}
+                                        </div>
 
-//       {/* Animation */}
-//       <style>
-//         {`
-//           @keyframes fadeInUp {
-//             0% {
-//               opacity: 0;
-//               transform: translateY(30px);
-//             }
-//             100% {
-//               opacity: 1;
-//               transform: translateY(0);
-//             }
-//           }
-//           .animate-fadeInUp {
-//             animation: fadeInUp 0.6s ease forwards !important;
-//           }
-//         `}
-//       </style>
-//     </section>
-//   );
-// };
+                                        {/* Bottom Glassmorphism Bar */}
+                                        <div className="absolute bottom-0 left-0 w-full p-4 z-20">
+                                            <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl p-4 transform transition-all duration-500 group-hover:bg-[#1d3278]/60 group-hover:border-[#39BBEF]/30">
+                                                <h3 className="text-white font-bold text-sm md:text-base tracking-tight leading-tight mb-1">
+                                                    {product.name}
+                                                </h3>
+                                                <div className="flex items-center justify-between overflow-hidden h-0 group-hover:h-5 transition-all duration-500">
+                                                    <span className="text-[10px] text-[#39BBEF] font-black uppercase tracking-widest">
+                                                        Explore More
+                                                    </span>
+                                                    <ArrowRight className="w-4 h-4 text-[#39BBEF]" />
+                                                </div>
+                                            </div>
+                                        </div>
 
-// export default Products;
+                                        {/* Hover Overlay Shade */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Navigation Buttons */}
+                    {collectiveProducts.length > 5 && (
+                        <>
+                            <button 
+                                onClick={scrollPrev}
+                                className="absolute -left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center text-gray-800 z-40 hover:bg-gray-50 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex"
+                            >
+                                <ChevronLeft className="w-6 h-6" />
+                            </button>
+                            <button 
+                                onClick={scrollNext}
+                                className="absolute -right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white shadow-lg rounded-full flex items-center justify-center text-gray-800 z-40 hover:bg-gray-50 transition-all opacity-0 group-hover/carousel:opacity-100 hidden md:flex"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            <style dangerouslySetInnerHTML={{__html: `
+                .shine-figure {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .shine-figure::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -75%;
+                    z-index: 15;
+                    display: block;
+                    width: 50%;
+                    height: 100%;
+                    background: linear-gradient(
+                        to right,
+                        rgba(255, 255, 255, 0) 0%,
+                        rgba(255, 255, 255, 0.4) 50%,
+                        rgba(255, 255, 255, 0) 100%
+                    );
+                    transform: skewX(-25deg);
+                    pointer-events: none;
+                }
+                .shine-figure:hover::before {
+                    animation: shine-sweep 0.75s ease-in-out;
+                }
+                @keyframes shine-sweep {
+                    0%   { left: -75%; }
+                    100% { left: 125%; }
+                }
+            `}} />
+        </section>
+    );
+};
+
+export default Products;

@@ -11,7 +11,7 @@ import Footer from '../components/Footer';
 import Header from '@/components/Header';
 import Clients from '@/components/Clients';
 // import Portfolio from '@/components/Portfolio';
-// import Products from '@/components/Products';
+import Products from '@/components/Products';
 import Banner from '@/components/Banner';
 import CorporateService from '@/components/CorporateService';
 import Partners from '@/components/Partners';
@@ -22,11 +22,11 @@ const Index = () => {
       <Header />
       <Hero />
       <About />
+      {/* <Services /> */}
+      <Products />
       <Partners />
       {/* <Clients/> */}
       {/* <Features /> */}
-      {/* <Services /> */}
-      {/* <Products/> */}
       {/* <Banner/> */}
       {/* <CorporateService/> */}
       {/* <Portfolio/> */}

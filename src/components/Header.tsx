@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [isEmployee, setIsEmployee] = useState(false);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
 
@@ -19,6 +20,7 @@ const Header = () => {
       } else {
         setPendingCount(0);
       }
+      setIsEmployee(localStorage.getItem('is_employee_authenticated') === 'true');
     };
     
     checkPending();
@@ -98,7 +100,7 @@ const Header = () => {
                 className={`relative py-3 px-6 text-white text-[13px] font-semibold hover:bg-[#1d3278] transition-colors border-r border-[#455eb3] ${idx === 0 ? 'border-l' : ''} whitespace-nowrap`}
               >
                 {link.title}
-                {link.title === 'Employees Corner' && pendingCount > 0 && (
+                {link.title === 'Employees Corner' && isEmployee && pendingCount > 0 && (
                   <span className="absolute top-1 right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center justify-center min-w-[18px]">
                     {pendingCount}
                   </span>
@@ -129,7 +131,7 @@ const Header = () => {
                 className="py-3 px-6 border-b border-[#455eb3] hover:bg-[#1d3278] transition-colors font-medium flex justify-between items-center"
               >
                 {link.title}
-                {link.title === 'Employees Corner' && pendingCount > 0 && (
+                {link.title === 'Employees Corner' && isEmployee && pendingCount > 0 && (
                   <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                     {pendingCount}
                   </span>

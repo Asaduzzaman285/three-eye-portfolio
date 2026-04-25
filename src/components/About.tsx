@@ -1,7 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const About: React.FC = () => {
+  const [aboutData, setAboutData] = useState<any>(null);
+  const API_BASE = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+
+  useEffect(() => {
+    const fetchAbout = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/v1/public/portfolio/about`);
+        if (res.data?.success && res.data.data) {
+          setAboutData(res.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to load about us data:", error);
+      }
+    };
+    fetchAbout();
+  }, []);
+
+  const defaultTitle = "Connecting Global Resources with Industrial Excellence.";
+  const defaultDesc = "Three Eye is a globally oriented trading and supply company specializing in the import and distribution of high-quality raw materials, chemicals, and industrial resources. With operational presence in Dhaka, Bangladesh and the United Arab Emirates, we ensure reliable sourcing and seamless supply solutions for modern industries. Our commitment to excellence, consistency, and long-term partnerships positions us as a trusted name in the global supply chain.";
+  const defaultImg = "/assets/img/about-fr.jpeg";
+
+  const title = aboutData?.right_title || defaultTitle;
+  const description = aboutData?.right_description || defaultDesc;
+  const image = aboutData?.left_image_path ? `${API_BASE}${aboutData.left_image_path}` : defaultImg;
   return (
     <section
       className="py-10 md:py-16 relative bg-cover bg-right bg-no-repeat bg-gray-50"
@@ -13,8 +38,8 @@ const About: React.FC = () => {
         {/* Left Image Section (approx 4 columns on large screens) */}
         <div className="lg:col-span-4 flex justify-center lg:justify-end pt-2">
           <img
-            src="/assets/img/about-fr.jpeg"
-            alt="Industrial Plant"
+            src={image}
+            alt="About Us"
             className="w-full max-w-sm md:max-w-md h-auto object-cover"
             style={{ 
               WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,1) 25%)',
@@ -27,12 +52,12 @@ const About: React.FC = () => {
         <div className="lg:col-span-8 flex flex-col space-y-6 text-gray-800 text-sm md:text-base leading-relaxed">
 
           <h2 className="text-xl md:text-2xl font-bold text-blue-900 border-b-2 border-blue-900 pb-2 inline-block self-start">
-            Connecting Global Resources with Industrial Excellence.
+            {title}
           </h2>
 
           <div className="space-y-4">
             <p className="text-gray-700 leading-relaxed text-justify">
-              Three Eye is a globally oriented trading and supply company specializing in the import and distribution of high-quality raw materials, chemicals, and industrial resources. With operational presence in Dhaka, Bangladesh and the United Arab Emirates, we ensure reliable sourcing and seamless supply solutions for modern industries. Our commitment to excellence, consistency, and long-term partnerships positions us as a trusted name in the global supply chain.
+              {description}
             </p>
 
             <div className="pt-4">

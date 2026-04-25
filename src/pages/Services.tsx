@@ -1,44 +1,29 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Globe, Settings, FileCheck, Truck, Landmark } from 'lucide-react';
-
-const services = [
-  {
-    title: 'Product Sourcing',
-    icon: Globe,
-    desc: 'We leverage a well-established international network to identify and secure high-quality materials with consistency and precision. Our sourcing approach is driven by reliability, competitive positioning, and long-term supplier alignment.',
-    bgImage: '/assets/img/slider1.jpeg'
-  },
-  {
-    title: 'Product Development',
-    icon: Settings,
-    desc: 'We collaborate closely with supply partners to develop and refine products according to specific requirements. Our focus remains on achieving exact specifications, maintaining quality integrity, and ensuring performance consistency across every batch.',
-    bgImage: '/assets/img/slider2.jpeg'
-  },
-  {
-    title: 'CNF (Clearing & Forwarding)',
-    icon: FileCheck,
-    desc: 'Our CNF operations are managed with meticulous attention to documentation, compliance, and regulatory procedures. We ensure smooth customs clearance and minimize operational delays through structured coordination and expertise.',
-    bgImage: '/assets/img/slider3.jpeg'
-  },
-  {
-    title: 'Logistics Management',
-    icon: Truck,
-    desc: 'We design and manage efficient logistics solutions that ensure the timely and secure movement of goods. From shipment planning to final delivery, every stage is executed with precision and operational discipline.',
-    bgImage: '/assets/img/services.jpg'
-  },
-  {
-    title: 'Banking Consultation',
-    icon: Landmark,
-    desc: 'We provide strategic guidance on trade-related financial processes, supporting clients with documentation, payment structuring, and banking coordination to ensure secure and streamlined transactions.',
-    bgImage: '/assets/img/about-bg.jpeg'
-  }
-];
+import { Globe } from 'lucide-react';
+import axios from 'axios';
 
 const ServicesPage: React.FC = () => {
+  const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const API_BASE = import.meta.env.VITE_APP_API_BASE_URL || 'http://127.0.0.1:8000';
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    const fetchServices = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/v1/public/portfolio/services`);
+        if (res.data?.success && res.data.data) {
+          setServices(res.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to load services data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServices();
   }, []);
 
   return (
@@ -49,20 +34,25 @@ const ServicesPage: React.FC = () => {
 
         {/* SERVICES GRID (Main Focus at the very top) */}
         <section className="container mx-auto px-6 max-w-7xl mb-16">
-          <div className="text-center mb-10">
+          <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#1d3278] uppercase tracking-tight">
               Our Services
             </h1>
+            <div className="w-20 h-1.5 bg-[#39BBEF] mx-auto mt-4 rounded-full"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => {
-              const Icon = service.icon;
+            {loading ? (
+              <div className="col-span-full text-center py-20 text-gray-400">Loading services...</div>
+            ) : services.length === 0 ? (
+              <div className="col-span-full text-center py-20 text-gray-400">No services available at the moment.</div>
+            ) : services.map((service, index) => {
+              const bgImg = service.icon_image_path ? `${API_BASE}${service.icon_image_path}` : '/assets/img/services.jpg';
               return (
                 <div key={index} className="relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col group min-h-[350px]">
                   {/* Background Image layer */}
                   <img
-                    src={service.bgImage}
+                    src={bgImg}
                     alt={service.title}
                     className="absolute inset-0 w-full h-full object-cover z-0 group-hover:scale-110 transition-transform duration-700"
                   />
@@ -72,12 +62,12 @@ const ServicesPage: React.FC = () => {
                   {/* Content layer */}
                   <div className="relative z-20 p-8 flex flex-col h-full">
                     <div className="flex items-center justify-start mb-6">
-                      <Icon className="w-12 h-12 text-[#39BBEF] group-hover:text-white transition-colors duration-300" />
+                      <Globe className="w-12 h-12 text-[#39BBEF] group-hover:text-white transition-colors duration-300" />
                     </div>
                     {/* Explicit text-white ensures it overrides global heading colors */}
                     <h3 className="text-2xl font-bold text-white mb-4 drop-shadow-md">{service.title}</h3>
                     <p className="text-gray-200 text-sm leading-relaxed flex-grow drop-shadow">
-                      {service.desc}
+                      {service.description}
                     </p>
                   </div>
                 </div>
